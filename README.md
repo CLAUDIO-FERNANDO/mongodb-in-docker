@@ -1,21 +1,24 @@
-# mongodb-in-docker
-MongoDB - docker - docker-compose
+Aqui está a documentação explicando cada parte do código:
 
 
- Vou explicar o código em detalhes para que você possa entender melhor cada parte:
-
+----------------------------------------------/VERSÃO & NETWORK/-------------------------------------------------------------------
 
 version: '3.8'
-```
-A versão do formato do arquivo do Docker Compose que estamos utilizando.
 
----------------------------------------------------------------------------------------------------------------------
 networks:
   mongo-network:
     driver: bridge
-```
-Definição de uma rede chamada `mongo-network` com o driver de rede `bridge`. Essa rede será usada para conectar os serviços `mongo-express` e `mongodb`.
----------------------------------------------------------------------------------------------------------------------
+
+Essa seção define a versão do Docker Compose utilizada e, em seguida, define uma rede chamada "mongo-network" com o driver "bridge". Essa rede será usada para permitir a comunicação entre os serviços.
+
+----------------------------------------------/VOLUME/--------------------------------------------------------------------------
+
+volumes:
+  mongo_data:
+
+Aqui, é definido um volume chamado "mongo_data". Volumes são usados para persistir os dados de um container Docker em uma localização específica do sistema de arquivos do host.
+
+----------------------------------------------/MONGO-EXPRESS/----------------------------------------------------------------------
 
 services:
   mongo-express:
@@ -30,16 +33,32 @@ services:
       - ME_CONFIG_MONGODB_ADMINPASSWORD=mongopwd
     depends_on:
       - mongodb
-```
-Definição do serviço `mongo-express`:
 
-- Utilizamos a imagem `mongo-express`, que é a imagem oficial do Mongo Express.
-- Mapeamos a porta `8081` do host para a porta `8081` do contêiner, permitindo acessar o Mongo Express no host através da porta `8081`.
-- Conectamos o serviço à rede `mongo-network`.
-- Definimos as variáveis de ambiente necessárias para configurar a conexão com o MongoDB, incluindo o servidor (`ME_CONFIG_MONGODB_SERVER`), nome de usuário (`ME_CONFIG_MONGODB_ADMINUSERNAME`) e senha (`ME_CONFIG_MONGODB_ADMINPASSWORD`).
-- Especificamos que o serviço depende do serviço `mongodb`, garantindo que o MongoDB esteja rodando antes de iniciar o Mongo Express.
 
----------------------------------------------------------------------------------------------------------------------
+
+services: Indica o início da seção de definição de serviços do Docker Compose.
+
+mongo-express: É o nome dado ao serviço do Mongo Express definido neste trecho do código.
+
+image: mongo-express: Especifica a imagem Docker a ser utilizada para o serviço do Mongo Express. Nesse caso, a imagem oficial do Mongo Express será baixada e utilizada.
+
+ports: Define a configuração de mapeamento de porta entre o host e o container. Neste caso, a porta 8081 do host é mapeada para a porta 8081 do container. Isso permite que você acesse o Mongo Express no host através da porta 8081.
+
+networks: Define a rede à qual o serviço do Mongo Express será conectado. Neste caso, o serviço está conectado à rede mongo-network, que foi definida anteriormente no arquivo de configuração.
+
+environment: Permite configurar variáveis de ambiente dentro do container do Mongo Express. Aqui, são definidas três variáveis de ambiente:
+
+ME_CONFIG_MONGODB_SERVER: Define o nome do servidor MongoDB ao qual o Mongo Express se conectará. Nesse caso, é definido como "mongodb", que é o nome do serviço do MongoDB que foi definido anteriormente.
+ME_CONFIG_MONGODB_ADMINUSERNAME: Define o nome de usuário do administrador do MongoDB que o Mongo Express utilizará para autenticação. Neste caso, é definido como "mongouser".
+ME_CONFIG_MONGODB_ADMINPASSWORD: Define a senha do administrador do MongoDB que o Mongo Express utilizará para autenticação. Neste caso, é definido como "mongopwd".
+depends_on: Define a dependência do serviço do Mongo Express em relação ao serviço do MongoDB. Isso significa que o serviço do MongoDB será iniciado antes do serviço do Mongo Express.
+
+Essa parte do código configura o serviço do Mongo Express no ambiente Docker. Ele define a imagem, as portas, a rede e as variáveis de ambiente necessárias para o Mongo Express se conectar ao servidor MongoDB e autenticar usando um nome de usuário e senha específicos. Isso permite que você acesse o Mongo Express no host através da porta 8081 e gerencie o banco de dados MongoDB por meio da interface web fornecida pelo Mongo Express.
+
+
+
+----------------------------------------------/MONGODB/--------------------------------------------------------------------------
+
 
   mongodb:
     image: mongo:4.4.3
@@ -52,19 +71,32 @@ Definição do serviço `mongo-express`:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongouser
       - MONGO_INITDB_ROOT_PASSWORD=mongopwd
-```
-Definição do serviço `mongodb`:
 
-- Utilizamos a imagem `mongo:4.4.3`, que é a imagem oficial do MongoDB na versão 4.4.3.
-- Mapeamos a porta `27017` do host para a porta `27017` do contêiner, permitindo acessar o MongoDB no host através da porta `27017`.
-- Criamos um volume nomeado `mongo_data` e o mapeamos para o diretório `/data/db` dentro do contêiner, garantindo que os dados do MongoDB sejam persistentes mesmo após reinicializações.
-- Conectamos o serviço à rede `mongo-network`.
-- Definimos as variáveis de ambiente necessárias para configurar a inicialização do MongoDB, incluindo o nome de usuário do superusuário (`MONGO_INITDB_ROOT_USERNAME`) e a senha do superusuário (`MONGO_INITDB_ROOT_PASSWORD`).
 
----------------------------------------------------------------------------------------------------------------------
-volumes:
-  mongo_data:
-```
-Declaração do volume nomeado `mongo_data` que será usado para persistir os dados do MongoDB.
+mongodb: É o nome dado ao serviço do MongoDB definido neste trecho do código.
 
-Espero que essa explicação detalhada ajude você a entender melhor o código do Docker Compose. 
+image: mongo:4.4.3: Especifica a imagem Docker que será utilizada para o serviço do MongoDB. Nesse caso, a imagem oficial do MongoDB na versão 4.4.3 será baixada e utilizada.
+
+ports: Define a configuração de mapeamento de porta entre o host e o container. Neste caso, a porta 27017 do host é mapeada para a porta 27017 do container. Isso permite que você acesse o MongoDB no host através da porta 27017.
+
+volumes: Especifica os volumes Docker a serem utilizados pelo serviço. Neste caso, o volume chamado mongo_data é montado em /data/db dentro do container do MongoDB. Isso garante que os dados do MongoDB sejam persistidos mesmo que o container seja reiniciado.
+
+networks: Define a rede à qual o serviço do MongoDB será conectado. Neste caso, o serviço está conectado à rede mongo-network, que foi definida anteriormente no arquivo de configuração.
+
+environment: Permite configurar variáveis de ambiente dentro do container do MongoDB. Aqui, são definidas duas variáveis de ambiente:
+
+MONGO_INITDB_ROOT_USERNAME: Define o nome de usuário raiz (root) do MongoDB como "mongouser".
+MONGO_INITDB_ROOT_PASSWORD: Define a senha do usuário raiz (root) do MongoDB como "mongopwd".
+
+Essa parte do código configura o serviço do MongoDB no ambiente Docker, definindo a imagem, as portas, os volumes, a rede e as variáveis de ambiente necessárias para inicializar o MongoDB com um nome de usuário e senha específicos. Essas configurações permitem que você acesse e administre o MongoDB por meio do serviço "mongo-express" ou de qualquer outra aplicação que precise se conectar ao banco de dados.
+
+
+
+
+-----------------------------------------------------------------
+
+Essa foi a configuração básica de um ambiente Docker com MongoDB e Mongo Express. Ele cria dois serviços em uma rede compartilhada, permitindo que o Mongo Express se conecte ao MongoDB e seja acessível através da porta 8081 do host. Os dados do MongoDB são persistidos usando um volume para garantir a preservação dos dados, mesmo que os containers sejam reiniciados.
+
+
+Abra seu navegador e acesse http://localhost:8081. Você será direcionado para a interface web do Mongo Express, onde poderá visualizar e administrar o banco de dados MongoDB.
+

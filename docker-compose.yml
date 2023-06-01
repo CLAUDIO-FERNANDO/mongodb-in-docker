@@ -4,6 +4,10 @@ networks:
   mongo-network:
     driver: bridge
 
+volumes:
+  mongo_data:
+
+
 services:
   mongo-express:
     image: mongo-express
@@ -29,8 +33,3 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=mongouser
       - MONGO_INITDB_ROOT_PASSWORD=mongopwd
-
-volumes:
-  mongo_data:
-
-
